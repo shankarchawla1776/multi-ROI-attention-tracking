@@ -1,0 +1,6 @@
+numpy 
+toml 
+sys 
+PyQt5
+json
+opencv-python
