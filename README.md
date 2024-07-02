@@ -1,4 +1,4 @@
-# Multi-ROI Animal Pose Tracking and Attention Calcluation
+# Multi-ROI Animal Tracking and Attention Analysis
 
 
 ### Usage 
@@ -23,6 +23,9 @@ Example:
 filepath = "test_data/videos/test.mp4"
 frames = "54,605"
 
+[h5]
+filepath = "test_data/h5s/test.h5"
+
 [rois]
 count = 3
 
@@ -39,14 +42,18 @@ First, run the ROI labeling GUI:
 ```zsh
 python3 src/main.py
 ```
-This will output some basic ROI analysis in the project's main directory. 
+This will output basic ROI analysis consisting of marker-ROI overlap in the project's main directory as a .csv file. 
 
 Next, run the attention analysis: 
 ```zsh
 python3 src/tests/test_rois.py
 ```
+This will output frame-by-frame data of head vector orientation in the project's main directory as a .csv file. 
+
+A script to extract more meaningful data (such as behavior bouts) from these output csvs will be added soon. 
 
 ### Methods 
+
 ##### Head orientation attention vectors
 - Mice (lacking a fovea) do not use eye movements in the same fashion as humans. Mice use head movements for orientation towards objects of interest and eyes play a supportive role [Michaiel at al., 2020](https://elifesciences.org/articles/57458). 
 - Sound are important for guiding exploratory mechanisms in mice [Snyder et al., 2012](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3273855/).
