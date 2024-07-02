@@ -4,3 +4,5 @@ sys
 PyQt5
 json
 opencv-python
+h5py
+pandas

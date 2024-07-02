@@ -1,54 +1,19 @@
-# import matplotlib.pyplot as plt
-# from matplotlib.patches import Polygon
-# from matplotlib.widgets import PolygonSelector 
-
-# class ROISelection: 
-
-#     def __init__(self, ax, cb):
-#         self.ax = ax
-#         self.callback = cb
-#         self.polygon = PolygonSelector(ax, self.onselect)
-#         self.rois = [] 
-
-#     def onselect(self, verts):
-#         self.rois.append(verts)
-#         self.callback(self.rois)
-
-# def select_ROIs(frame, frame_n, exesting=None):
-#     fig, ax = plt.subplots(figsize=(10, 6))
-#     ax.imshow(frame)
-#     ax.axis('off')
-#     ax.set_title(f"Frame {frame_n} - Define ROIs")
-
-#     rois = exesting or []
-
-#     def update(new_rois):
-#         nonlocal rois 
-#         rois = new_rois 
-    
-#     roi_selector = ROISelection(ax, update)
-#     for i in rois: 
-#         polygon = Polygon(i, fill=False, edgecolor='r')
-#         ax.add_patch(polygon)
-#     plt.show(block=True)
-#     plt.close(fig)
-#     return rois 
-
 import sys
 import numpy as np
 import toml
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QPushButton, QVBoxLayout, QWidget, QLabel
 from PyQt5.QtGui import QImage, QPixmap, QPen, QColor, QFont
 from PyQt5.QtCore import Qt, QPointF
+import pandas as pd
 
-class ROIGraphicsScene(QGraphicsScene):
+class ROIsScene(QGraphicsScene):
     def __init__(self, roi_names, parent=None):
         super().__init__(parent)
         self.roi_names = roi_names
         self.current_roi = []
         self.rois = []
         self.start_point = None
-        self.close_threshold = 10  # pixels
+        self.close_thresh = 10  # pixels
         self.current_roi_index = 0
 
     def mousePressEvent(self, event):
@@ -68,12 +33,13 @@ class ROIGraphicsScene(QGraphicsScene):
 
     def is_near_start(self, pos):
         return (self.start_point is not None and 
-                np.sqrt((pos.x() - self.start_point.x())**2 + (pos.y() - self.start_point.y())**2) < self.close_threshold)
+                np.sqrt((pos.x() - self.start_point.x())**2 + (pos.y() - self.start_point.y())**2) < self.close_thresh)
 
     def finish_roi(self):
         if len(self.current_roi) > 2:
             self.addLine(self.current_roi[-1].x(), self.current_roi[-1].y(),
-                         self.start_point.x(), self.start_point.y(), QPen(Qt.red, 2))
+                         self.start_point.x(), self.start_point.y(), QPen(Qt.red, 2)) # turns off w/ vectors for original rand img
+            
             center = np.mean(self.current_roi, axis=0)
             text = self.addText(self.roi_names[self.current_roi_index])
             text.setFont(QFont("Arial", 12))
@@ -94,18 +60,18 @@ class ROISelector(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle(f'ROI Selector - Frame {self.frame_number}')
+        self.setWindowTitle(f'ROI Selector - Frame {self.frame_number}') # FIXME: this doesnt update
         self.setGeometry(100, 100, 800, 600)
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
 
-        self.scene = ROIGraphicsScene(self.roi_names)
+        self.scene = ROIsScene(self.roi_names)
         self.view = QGraphicsView(self.scene)
         layout.addWidget(self.view)
 
-        self.info_label = QLabel(f"Define ROI: {self.roi_names[0]}")
+        self.info_label = QLabel(f"Define ROI: {self.roi_names[0]}") # FIXME: this doesnt update 
         layout.addWidget(self.info_label)
 
         self.done_button = QPushButton('Done', self)
@@ -123,7 +89,7 @@ class ROISelector(QMainWindow):
         self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
 
     def resizeEvent(self, event):
-        self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
+        self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio) # add QOL
 
 def select_rois(frame, frame_number, roi_names):
     app = QApplication.instance()
@@ -143,8 +109,50 @@ def save_rois(rois, config):
     print("Saving ROIs:", rois)
     print("ROI names:", config['rois']['names'])
 
+def compute_ROI_point(x, y, polygon):
+    n = len(polygon) # will this work for weirder ROIs?, though all reasonable rois are polygons. 
+    inside = False
+    p1x, p1y = polygon[0]
+
+    for i in range(n + 1):
+        p2x, p2y = polygon[i % n] # check here w/ manip
+        if y > min(p1y, p2y):
+            if y <= max(p1y, p2y):
+
+                if x <= max(p1x, p2x):
+                    if p1y != p2y:
+                        xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x # how to make 2d shape fit in 2d representation of 3d space? 
+                    if p1x == p2x or x <= xinters:
+                        inside = not inside
+        p1x, p1y = p2x, p2y
+
+    return inside
+
+def compute_entries(skeleton_data, rois, roi_names, nodes, total_frames):
+    data = []
+    tracks_n, _, nodes_n, _ = skeleton_data.shape
+
+    rois_np = [np.array([(int(p.x()), int(p.y())) for p in roi]) for roi in rois]
+
+    for frame in range(total_frames):
+        for track in range(tracks_n):
+            for i, j in enumerate(nodes):
+                x, y = skeleton_data[track, :, i, frame][:2]  # only use x and y coordinates
+
+                for roi_index, roi in enumerate(rois_np):
+                    if compute_ROI_point(x, y, roi):
+                        data.append({
+                            'Frame': frame,
+                            'Track': f'track_{track}',
+                            'Marker': j,
+                            'ROI': roi_names[roi_index]
+                        }) # track? 
+
+    return pd.DataFrame(data)
+
+
 if __name__ == "__main__":
-    config = load_config('config.toml')
+    config = load_config('config.toml') # for QOL, maybe use better methods than script pathing and search for the config file in dirs
     video_path = config['video']['filepath']
     roi_names = list(config['rois']['names'].values())
 
@@ -153,3 +161,4 @@ if __name__ == "__main__":
 
     rois = select_rois(frame, 0, roi_names)
     save_rois(rois, config)
+
