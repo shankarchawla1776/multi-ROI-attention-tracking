@@ -6,3 +6,5 @@ json
 opencv-python
 h5py
 pandas
+tensorflow 
+matplotlib

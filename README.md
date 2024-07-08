@@ -7,37 +7,41 @@ Clone the repository
 ```zsh
 git clone https://github.com/shankarchawla1776/multi-ROI-attention-tracking.git
 ```
-
-Navigate to ```src/config.toml```. 
-
-Under the ```[video]``` feild, define your video (.mp4) filepath and the number of frames in your video (as a string).
-
-Under the ```[rois]``` field, define the number (integer) of rois you plan to analyze. 
-
-Under the ```[rois.names]``` field, set the number of each roi to the name of this roi. 
-
-Example: 
-
+To set up a virtual enviornment, run: 
+```zsh
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+Configure the toml file:
 ```toml
 [video]
-filepath = "test_data/videos/test.mp4"
-frames = "54,605"
+filepath = # str: path to your video
+frames = # str: number of frames in your video
 
 [h5]
-filepath = "test_data/h5s/test.h5"
+filepath = # str: path to your sleap h5 file
 
 [rois]
-count = 3
+count = # int: number of rois you want to define
 
 [rois.names]
-1 = "ButtonL"
-2 = "ButtonR"
-3 = "Reward"
+# for each roi:
+roi_numbers = roi_name # int = str
+
+[attention_vectors]
+human_labled_frames = # int: number of annotated frames you want to train the model with
+magnitude = # int: magnitude of model-placed attention vectors (arbitrary) 
+
+[markers]
+anchor = # str: marker that will serve as the origin point for attention vectors
+
+[tests]
+test_frame = # int: example frame for testing the model
+
 ```
 
-To run analysis:
-
-First, run the ROI labeling GUI:
+To run analysis, first run the ROI labeling GUI:
 
 ```zsh
 python3 src/main.py
@@ -50,11 +54,22 @@ python3 src/tests/test_rois.py
 ```
 This will output frame-by-frame data of head vector orientation in the project's main directory as a .csv file. 
 
-A script to extract more meaningful data (such as behavior bouts) from these output csvs will be added soon. 
+To begin using the U-Net based model for attention tracking, annotate some frames with attention vectors:
+```zsh
+python3 src/tests/vector_placement.py
+```
+Then, to train the model, run: 
+```zsh
+python3 src/vector_inference/model.py
+```
+Test the model using:
+```zsh
+python3 src/vector_inference/test_model.py
+```
 
 ### Methods 
 
 ##### Head orientation attention vectors
 - Mice (lacking a fovea) do not use eye movements in the same fashion as humans. Mice use head movements for orientation towards objects of interest and eyes play a supportive role [Michaiel at al., 2020](https://elifesciences.org/articles/57458). 
 - Sound are important for guiding exploratory mechanisms in mice [Snyder et al., 2012](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3273855/).
-This evidence supports our to utilize vectors representing mouse attention. The origin of attention vectors will be placed on the nose marker of the animal and reach their terminal point when they colide with enclosure walls. This is a basic implementation. The challenge finding a way to respect 3D space with projections of 2D vectors. 
+This evidence supports the decision to use vectors to represent mouse attention. 

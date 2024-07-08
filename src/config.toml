@@ -1,13 +1,24 @@
 [video]
-filepath = "path/to/your/video.mp4"
-frames = "" # make this an int input 
+filepath = "test_data/videos/test.mp4"
+frames = "54,605" # FIXME: make this an int input 
 
 [h5]
-filepath = "path/to/your/sleap/tracking/file.h5"
+filepath = "test_data/h5s/test.h5"
 
 [rois]
-# count = int 
+count = 3
 
 [rois.names]
-# 1 = "ROI1"
-# the number of rois you name must match the value of count in the [rois] feild
+1 = "ButtonL"
+2 = "ButtonR"
+3 = "Reward"
+
+[attention_vectors]
+human_labled_frames = 20 
+magnitude = 100
+
+[markers]
+anchor = "nose1"
+
+[tests]
+test_frame = 13766

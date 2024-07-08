@@ -4,9 +4,14 @@ run.sh
 # Test analysis 
 analysis_output/
 compute_attention_vectors.py
+# model outputs 
+vec_prediction_tests/
+vector_prediction_model.keras
+roi_data.csv
+head_direction_data.csv
+marker_roi_entries.csv
 # random 
 test.py
-src/attention_model/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
