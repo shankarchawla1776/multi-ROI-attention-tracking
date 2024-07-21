@@ -27,6 +27,12 @@ count = # int: number of rois you want to define
 # for each roi:
 roi_numbers = roi_name # int = str
 
+[markers]
+bout_marker = # marker to find bouts for 
+
+[parmas]
+bout_threshold = # theshold for a bout to be valid (s)
+
 ```
 
 To run analysis, first run the ROI labeling GUI:

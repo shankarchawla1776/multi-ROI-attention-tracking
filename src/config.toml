@@ -1,9 +1,9 @@
 [video]
-filepath = "" # absolute path 
-frames = ""
+filepath = "test_data/videos/test.mp4" # absolute path 
+frames = "75099" # FIXME: make this an int input 
 
 [h5]
-filepath = "" # absolute path 
+filepath = "test_data/h5s/test.h5" # absolute path 
 
 [rois]
 count = 6
@@ -16,4 +16,15 @@ count = 6
 5 = "ROI5"
 6 = "ROI6"
 
+
+[attention_vectors]
+human_labled_frames = 50
+magnitude = 20
+
+[markers]
+bout_marker = 'nose1'
+
+
+[params]
+bout_threshold = 1
 
