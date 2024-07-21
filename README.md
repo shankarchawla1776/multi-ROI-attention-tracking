@@ -1,5 +1,11 @@
 # Multi-ROI Animal Tracking and Attention Analysis
 
+Issues: 
+- training data has limited variability (recursive adjustment GUI model)
+- Overgitting 
+- U-Net complexity 
+- training process (probably not)
+- the model might not be extracting the most relevant features (figure this out) 
 
 ### Usage 
 

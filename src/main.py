@@ -30,7 +30,7 @@ def load_skeleton(config_path):
     with h5py.File(h5_path, 'r') as h5:
         nodes = [name.decode() for name in h5['node_names'][:]]
         positions = h5["tracks"][:]
-    
+     
     return positions, nodes
 
 def main():
@@ -61,3 +61,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    

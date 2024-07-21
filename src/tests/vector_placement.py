@@ -1,3 +1,7 @@
+###################
+### DO NOT USE ###
+###################
+
 import cv2
 import numpy as np
 import json
@@ -7,6 +11,7 @@ import random
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QPushButton, QVBoxLayout, QWidget, QHBoxLayout, QGraphicsLineItem
 from PyQt5.QtGui import QImage, QPixmap, QPen, QColor, QFont
 from PyQt5.QtCore import Qt, QPointF, QLineF
+
 """
 add a function for random frame presentation filtration. this may be the cause of the 1 directional model. 
 """
@@ -164,9 +169,12 @@ class RandomFrameGUI(QMainWindow):
             }
 
     def next_frame(self):
+        with open(self.config_path, 'r') as f: 
+            contents = toml.load(f)
+            frames_n = contents['attention_vectors']['human_labled_frames']
         if self.vector_placed:
             self.valid_frames += 1
-            if self.valid_frames >= 20:
+            if self.valid_frames >= frames_n:
                 self.close()
             else:
                 self.reset_frame()

@@ -130,23 +130,40 @@ def compute_ROI_point(x, y, polygon):
 
 def compute_entries(skeleton_data, rois, roi_names, nodes, total_frames):
     data = []
-    tracks_n, _, nodes_n, _ = skeleton_data.shape
+    # tracks_n, _, nodes_n, _ = skeleton_data.shape 
+    tracks_n, _, nodes_n, frames_n = skeleton_data.shape
 
     rois_np = [np.array([(int(p.x()), int(p.y())) for p in roi]) for roi in rois]
 
-    for frame in range(total_frames):
+    # for frame in range(total_frames):  
+    for frame in range(min(total_frames, frames_n)):
+        # for track in range(tracks_n):
+        #     for i, j in enumerate(nodes):
+        #         # FIXME: does not work with all frame counts: index i out of bound for axis 3 with size i 
+        #         x, y = skeleton_data[track, :, i, frame][:2]  # only use x and y coordinates
+
+        #         for roi_index, roi in enumerate(rois_np):
+        #             if compute_ROI_point(x, y, roi):
+        #                 data.append({
+        #                     'Frame': frame,
+        #                     'Track': f'track_{track}',
+        #                     'Marker': j,
+        #                     'ROI': roi_names[roi_index]
+        #                 }) # track? 
+
         for track in range(tracks_n):
             for i, j in enumerate(nodes):
-                x, y = skeleton_data[track, :, i, frame][:2]  # only use x and y coordinates
+                if i < nodes_n and frame < frames_n:  # Add this check
+                    x, y = skeleton_data[track, :, i, frame][:2]  # only use x and y coordinates
 
-                for roi_index, roi in enumerate(rois_np):
-                    if compute_ROI_point(x, y, roi):
-                        data.append({
-                            'Frame': frame,
-                            'Track': f'track_{track}',
-                            'Marker': j,
-                            'ROI': roi_names[roi_index]
-                        }) # track? 
+                    for roi_index, roi in enumerate(rois_np):
+                        if compute_ROI_point(x, y, roi):
+                            data.append({
+                                'Frame': frame,
+                                'Track': f'track_{track}',
+                                'Marker': j,
+                                'ROI': roi_names[roi_index]
+                            })
 
     return pd.DataFrame(data)
 

@@ -1,9 +1,17 @@
+# development
+TODO.md
 # Test data 
 test_data/
 run.sh
 # Test analysis 
 analysis_output/
 compute_attention_vectors.py
+# unfinished 
+# src/tests/*.json
+# src/tests/*.py
+# src/tests/vector_placement.py
+src/vector_inference/
+src/tests
 # model outputs 
 vec_prediction_tests/
 vector_prediction_model.keras
