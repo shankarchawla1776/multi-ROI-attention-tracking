@@ -11,29 +11,7 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
-Configure the toml file:
-```toml
-[video]
-filepath = # str: path to your video
-frames = # str: number of frames in your video
-
-[h5]
-filepath = # str: path to your sleap h5 file
-
-[rois]
-count = # int: number of rois you want to define
-
-[rois.names]
-# for each roi:
-roi_numbers = roi_name # int = str
-
-[markers]
-bout_marker = # marker to find bouts for 
-
-[parmas]
-bout_threshold = # theshold for a bout to be valid (s)
-
-```
+Configure the toml file.
 
 To run analysis, first run the ROI labeling GUI:
 
